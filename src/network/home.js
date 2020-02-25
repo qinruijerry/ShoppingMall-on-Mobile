@@ -10,3 +10,13 @@ export function getMultidata (){
     // method: "get"
   })
 }
+
+export function getGoods (type, page) {
+  return request1({
+    url: "/home/data",
+    params: {
+      type, page
+    }
+  })
+
+}
