@@ -9,6 +9,7 @@
 
   import tabbar from "components/content/mainTabbar/maintabbar"
 
+
   export default {
     name: "App",
     components: {
