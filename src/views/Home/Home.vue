@@ -1,12 +1,15 @@
 <template>
   <div id="home">
     <navbar class="home-nav"><div slot="centernav">购物街</div></navbar>
+    <tab-control :tabControlTags="['流行', '新款', '精选']" class="tabControl_t" @tabControlClick="getGoodsType"
+                 ref="tabControl_t"
+                 v-show="tabbar_isShow"></tab-control>
 
     <scroll class="scrollContent" ref="scroll" @scroll="scrollPosition" @loadContent="scrollLoad" :pull-up="true">
-      <home-swipper :banners="banners"></home-swipper>
+      <home-swipper :banners="banners" @swiperFinished="loadCheck"></home-swipper>
       <home-commends :recommends="recommends"></home-commends>
       <home-feature></home-feature>
-      <tab-control :tabControlTags="['流行', '新款', '精选']" class="tabControl" @tabControlClick="getGoodsType"></tab-control>
+      <tab-control :tabControlTags="['流行', '新款', '精选']" class="tabControl" @tabControlClick="getGoodsType" ref="tabControl_b"></tab-control>
       <goods-list :goodListData="goodsType"></goods-list>
     </scroll>
 
@@ -30,6 +33,7 @@
   import BackTop from "components/content/backTop/BackTop"
 
   import {getMultidata, getGoods} from "../../network/home";
+  import {debounce } from "../../common/utils";
 
 
   export default {
@@ -48,6 +52,9 @@
         },
         currentType: "pop",
         isShow : false,
+        tabbarTop: 0,
+        tabbar_isShow: false,
+        saveY : 0,
       }
     },
     computed: {
@@ -64,22 +71,23 @@
     },
 
     mounted() {
-      const refresh = this.debounce(this.$refs.scroll.scrollRefresh, 200);
+
+
+      const refresh = debounce(this.$refs.scroll.scrollRefresh, 200);
       this.$bus.$on("imgLoaded", () => {
-        console.log("imgLoaded");
+        // console.log("imgLoaded");
         refresh()
       })
     },
+    activated(){
+      this.$refs.scroll.scroll.scrollTo(0, this.saveY, 0);
+      this.$refs.scroll.scroll.refresh()
+    },
+    deactivated(){
+      this.saveY = this.$refs.scroll.scroll.y
+    },
     methods: {
-      debounce(func, delay){
-        let timer = null;
-        return function(...args){
-          if(timer) {clearTimeout(timer)}
-          timer = setTimeout(() => {
-            func.apply(this, args)
-          }, delay)
-        }
-      },
+
       getGoodsType(index){
         switch(index) {
           case 0:
@@ -92,7 +100,8 @@
             this.currentType = 'sell'
                 break
         }
-
+        this.$refs.tabControl_t.currentIndex = index;
+        this.$refs.tabControl_b.currentIndex = index;
       },
 
       // get server's data'
@@ -108,7 +117,7 @@
         getGoods(type, page).then(result => {
           // console.log(result.data.list)
           this.goods[type].list.push(...result.data.list);
-          this.goods[type].page += 1
+          this.goods[type].page += 1;
           this.$refs.scroll.finishPullUp()
         })
       },
@@ -118,11 +127,21 @@
       scrollPosition(position) {
         // console.log(position)
         // console.log(-position >= 1000)
-        this.isShow = (-position.y) >= 1000
+        this.isShow = (-position.y) >= 1000;
+
+        this.tabbar_isShow = (-position.y) > this.tabbarTop
+        // if((-position.y)> this.tabbarTop){
+        //   this.tabbar_isShow = true
+        // }
       },
       scrollLoad(){
         this.getGoodsData(this.currentType)
       },
+      loadCheck() {
+        // console.log("img Loaded");
+        // console.log(this.$refs.tabControl_b.$el.offsetTop);
+        this.tabbarTop = this.$refs.tabControl_b.$el.offsetTop
+      }
 
 
     }
@@ -141,17 +160,16 @@
     background-color: var(--color-tint);
     color: white;
 
-    /*position: fixed;*/
-    left: 0;
-    right: 0;
-    top: 0;
-
     z-index: 9;
 
   }
-  .tabControl {
-    position: sticky;
-    top: 44px;
+  .tabControl_t {
+    /*top: 44px;*/
+    position: relative;
+    z-index: 1;
+    left: 0;
+    right: 0;
+    top: 0;
   }
 
   /*.scrollContent {*/
