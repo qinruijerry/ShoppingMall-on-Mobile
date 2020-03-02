@@ -30,6 +30,7 @@
       methods: {
           listClick(index) {
             this.currentIndex = index;
+            this.$emit("navItemClick", index)
           },
         goBack() {
             this.$router.go(-1)

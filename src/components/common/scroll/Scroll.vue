@@ -29,7 +29,7 @@
       },
       mounted() {
           this.scroll = new BScroll(this.$refs.wrapper, {
-            // probeType: this.probeNum,
+            probeType: this.probeNum,
             click: true,
             pullUpLoad: this.pullUp,
 
@@ -40,7 +40,7 @@
         })
 
         this.scroll.on("pullingUp", () => {
-          console.log("Loading")
+          // console.log("Loading")
           this.$emit("loadContent")
           // this.scroll.finishPullUp()
           // setTimeout(function(){
